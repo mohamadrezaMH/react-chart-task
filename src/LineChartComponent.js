@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import Papa from "papaparse"; // برای پارس کردن فایل CSV
+import Papa from "papaparse"; 
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,17 +13,16 @@ import {
   registerables
 } from "chart.js";
 
-import 'chartjs-adapter-date-fns'; // برای پشتیبانی از مقیاس زمان
-
-// ChartJS.register(...registerables); // ثبت تمامی مقیاس‌ها از جمله time
-
+import 'chartjs-adapter-date-fns'; 
 
 // Register required Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend , ...registerables);
 
 const LineChartComponent = () => {
-  const [data, setData] = useState(null); // برای ذخیره داده‌های پارس شده
+  // State to store chart data
+  const [data, setData] = useState(null); 
 
+  // Function to load and parse CSV data
   const loadCSVData = async (csvFile) => {
     try {
       const response = await fetch(csvFile);
@@ -31,15 +30,15 @@ const LineChartComponent = () => {
       Papa.parse(text, {
         header: true,
         skipEmptyLines: true,
-        delimiter: ",", // جداکننده کاما
+        delimiter: ",",
         complete: (result) => {
-          console.log('PARSING RESULT:', result);
-          
+          // Check for valid data
           if (!result.data || result.data.length === 0) {
             console.error('No valid data found');
             return;
           }
 
+          // Extract relevant columns from CSV
           const labels = [];
           const temperature = [];
           const dewPoint = [];
@@ -52,6 +51,7 @@ const LineChartComponent = () => {
             windSpeed.push(parseFloat(row['wind_speed_10m (km/h)']));
           });
 
+          // Update state with formatted data
           setData({
             labels,
             datasets: [
@@ -86,7 +86,6 @@ const LineChartComponent = () => {
                 pointBackgroundColor: "rgba(0, 255, 128, 1)",
                 yAxisID: "y2",
                 tension: 0.4,
-                // borderWidth: 3,
                 pointStyle: "rect",
                 pointRadius: 0,
                 hoverRadius: 8,
@@ -104,11 +103,13 @@ const LineChartComponent = () => {
     }
   };
 
+  // Load CSV data when component mounts
   useEffect(() => {
-    const csvFile = "./file.csv"; // مسیر فایل CSV خود را اینجا وارد کنید
+    const csvFile = "./file.csv"; 
     loadCSVData(csvFile);
   }, []);
 
+  // Chart.js options for configuring the chart
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -161,23 +162,23 @@ const LineChartComponent = () => {
     },
     scales: {
       x: {
-        type: "time",  // استفاده از تایپ time برای نمایش تاریخ‌ها
+        type: "time",  
         time: {
-          unit: "day",  // تنظیم واحد نمایش به روز
-          tooltipFormat: "yyyy-MM-dd'  'HH:mm",  // فرمت نمایش تاریخ در تولتیپ
+          unit: "day",  
+          tooltipFormat: "yyyy-MM-dd'  'HH:mm",  
           displayFormats: {
-            day: "dd MMM",  // فرمت نمایش تاریخ روی محور X
+            day: "dd MMM",  
           },
         },
         ticks: {
-          color: "white", // رنگ تیک‌ها (برای نمایش تاریخ‌ها)
-          maxRotation: 0, // جلوگیری از چرخش تیک‌ها
+          color: "white", 
+          maxRotation: 0, 
           minRotation: 0,
         },
         grid: {
-          color: "rgba(255, 255, 255, 0.5)", // رنگ خط شبکه
-          borderColor: "white", // رنگ خط پایین نمودار (محور X)
-          borderWidth: 2, // ضخامت خط پایین نمودار
+          color: "rgba(255, 255, 255, 0.5)", 
+          borderColor: "white", 
+          borderWidth: 2, 
         },
       },
       y1: {
@@ -209,43 +210,33 @@ const LineChartComponent = () => {
         bottom: 20,
       },
     },
-  //   animation: {
-  //     duration: 0, // general animation time
-  // },
-  // hover: {
-  //     animationDuration: 0, // duration of animations when hovering an item
-  // },
-  // responsiveAnimationDuration: 0,
-    
   };
 
-
-
   // Add plugin for drawing vertical line
-    const verticalLinePlugin = {
-      id: "verticalLine",
-      beforeDraw: (chart) => {
-        if (chart.tooltip?._active?.length) {
-          const ctx = chart.ctx;
-          const activePoint = chart.tooltip._active[0];
-          const x = activePoint.element.x;
-          const topY = chart.scales.y1.top;
-          const bottomY = chart.scales.y1.bottom;
-  
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(x, topY);
-          ctx.lineTo(x, bottomY);
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = "white";
-          ctx.stroke();
-          ctx.restore();
-        }
-      },
-    };
-  
-    // Register plugin
-    ChartJS.register(verticalLinePlugin);
+  const verticalLinePlugin = {
+    id: "verticalLine",
+    beforeDraw: (chart) => {
+      if (chart.tooltip?._active?.length) {
+        const ctx = chart.ctx;
+        const activePoint = chart.tooltip._active[0];
+        const x = activePoint.element.x;
+        const topY = chart.scales.y1.top;
+        const bottomY = chart.scales.y1.bottom;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, topY);
+        ctx.lineTo(x, bottomY);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "white";
+        ctx.stroke();
+        ctx.restore();
+      }
+    },
+  };
+
+  // Register plugin
+  ChartJS.register(verticalLinePlugin);
 
   return (
     <div style={{ width: "80%", height: "500px", backgroundColor: "#1e1e1e", marginBottom: "50px" , padding: "20px", borderRadius: "8px" }}>
